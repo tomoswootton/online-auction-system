@@ -8,14 +8,16 @@ class Main {
   }
 
   public Main() {
-    // DBentry entry = readFileFromName("items", "000");
+    // DBentry entry = readIdFromName("items", "000");
     // System.out.println(entry.getStringRepresentation());
-    listTable("bids");
-
-    addBid("elliott", "hipppo");
-    listTable("bids");
+    listTable("items");
+    addItem("moose");
+    listTable("items");
 
   }
+  /*
+    DB
+  */
   void listTable(String table) {
     try(FileReader file = new FileReader("./"+table+".txt")) {
       BufferedReader inStream = new BufferedReader(file);
@@ -30,7 +32,7 @@ class Main {
     }
   }
   //find entry given Id
-  DBentry readFileFromId(String table, String Id) {
+  DBentry readNameFromId(String table, String Id) {
     DBentry entry = null;
 
     try(FileReader file = new FileReader("./"+table+".txt")) {
@@ -58,9 +60,8 @@ class Main {
     }
     return null;
   }
-
   //find entry given Name
-  DBentry readFileFromName(String table, String name) {
+  DBentry readIdFromName(String table, String name) {
     DBentry entry = null;
     //check invalid type of return data
 
@@ -97,7 +98,6 @@ class Main {
       System.out.println("write error: "+ e);
     }
   }
-
   int numEntries(String table) {
     String line;
     int lineCount = 0;
@@ -115,6 +115,9 @@ class Main {
     return lineCount;
   }
 
+  /*
+    Misc
+  */
   String makeIdFromNumEntries(int numEntries) {
     String numS = Integer.toString(numEntries);
     switch(numS.length()) {
@@ -132,22 +135,29 @@ class Main {
     return numS;
   }
 
+
   void addBid(String userName, String itemName) {
     //construct bid data structure from given userName and itemName
-    Bid bid = new Bid(makeIdFromNumEntries(numEntries("bids")),readFileFromName("users", userName).Id, readFileFromName("items", itemName).Id);
+    Bid bid = new Bid(makeIdFromNumEntries(numEntries("bids")),readIdFromName("users", userName).Id, readIdFromName("items", itemName).Id);
 
     System.out.println("Id: "+ bid.Id);
     System.out.println("userId: "+ bid.userId);
     System.out.println("itemId: "+ bid.itemId);
+    //append to storage file
     appendFile("bids", bid.getStringRepresentation());
   }
-
-  // add_item(Item item) {
-  //   appendFile("items", item.getStringRepresentation());
-  // }
-  // add_user(User user) {
-  //   appendFile("users", user.getStringRepresentation());
-  // }
+  void addItem(String name) {
+    //contruct item
+    Item item = new Item(makeIdFromNumEntries(numEntries("items")), name);
+    //append to storage
+    appendFile("items", item.getStringRepresentation());
+  }
+  void addUser(String name) {
+    //contruct item
+    User user = new User(makeIdFromNumEntries(numEntries("users")), name);
+    //append to storage
+    appendFile("users", user.getStringRepresentation());
+  }
 
 
 }
