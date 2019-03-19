@@ -8,22 +8,29 @@ class Main {
   }
 
   public Main() {
-    // DBentry entry = read_file_from_name("items", "000");
+    // DBentry entry = readFileFromName("items", "000");
     // System.out.println(entry.getStringRepresentation());
-    System.out.println("lineCount = "+num_entries("bids"));
-  }
+    listTable("bids");
 
-  boolean inTablesArray(String string) {
-    for (String s : tables) {
-      if (s.equals(string)) {
-        return true;
-      }
+    addBid("elliott", "hipppo");
+    listTable("bids");
+
+  }
+  void listTable(String table) {
+    try(FileReader file = new FileReader("./"+table+".txt")) {
+      BufferedReader inStream = new BufferedReader(file);
+      String line;
+      while((line = inStream.readLine()) != null) {
+        System.out.println(line);
+        }
+    } catch (FileNotFoundException e) {
+      throw new IllegalArgumentException("Invalid table given.", e);
+    } catch (IOException e) {
+      System.out.println(e);
     }
-    return false;
   }
-
   //find entry given Id
-  DBentry read_file_from_Id(String table, String Id) {
+  DBentry readFileFromId(String table, String Id) {
     DBentry entry = null;
 
     try(FileReader file = new FileReader("./"+table+".txt")) {
@@ -43,18 +50,17 @@ class Main {
         return entry;
         }
       }
-      System.out.println("ERROR: No Id found.");
+      System.out.println("ERROR: No Id found in table.");
     } catch (FileNotFoundException e) {
-      System.out.println("ERROR: invalid table.");
-
-      System.out.println(e);
+      throw new IllegalArgumentException("Invalid table given.", e);
     } catch (IOException e) {
       System.out.println(e);
     }
     return null;
   }
+
   //find entry given Name
-  DBentry read_file_from_name(String table, String name) {
+  DBentry readFileFromName(String table, String name) {
     DBentry entry = null;
     //check invalid type of return data
 
@@ -75,15 +81,14 @@ class Main {
       }
       System.out.println("ERROR: No name found.");
     } catch (FileNotFoundException e) {
-      System.out.println("ERROR: invalid table.");
-      System.out.println(e);
+      throw new IllegalArgumentException("Invalid table given.", e);
     } catch (IOException e) {
       System.out.println(e);
     }
     return null;
   }
   //append entry to file
-  void append_file(String table, String msg) {
+  void appendFile(String table, String msg) {
     try(FileWriter file = new FileWriter("./"+table+".txt", true)) {
       file.append(msg);
       file.flush();
@@ -93,7 +98,7 @@ class Main {
     }
   }
 
-  int num_entries(String table) {
+  int numEntries(String table) {
     String line;
     int lineCount = 0;
     try(FileReader file = new FileReader("./"+table+".txt")) {
@@ -110,16 +115,38 @@ class Main {
     return lineCount;
   }
 
-  // add_bid(String userName, String itemName) {
-  //   Bid bid = new Bid()
-  //   append_file("bids", bid.getStringRepresentation());
-  // }
-  //
+  String makeIdFromNumEntries(int numEntries) {
+    String numS = Integer.toString(numEntries);
+    switch(numS.length()) {
+      case 1:
+        numS = "00" + numS;
+        break;
+      case 2:
+        numS = "0" + numS;
+        break;
+      case 3 :
+        break;
+      default:
+        throw new IllegalArgumentException("Invalid input length.");
+    }
+    return numS;
+  }
+
+  void addBid(String userName, String itemName) {
+    //construct bid data structure from given userName and itemName
+    Bid bid = new Bid(makeIdFromNumEntries(numEntries("bids")),readFileFromName("users", userName).Id, readFileFromName("items", itemName).Id);
+
+    System.out.println("Id: "+ bid.Id);
+    System.out.println("userId: "+ bid.userId);
+    System.out.println("itemId: "+ bid.itemId);
+    appendFile("bids", bid.getStringRepresentation());
+  }
+
   // add_item(Item item) {
-  //   append_file("items", item.getStringRepresentation());
+  //   appendFile("items", item.getStringRepresentation());
   // }
   // add_user(User user) {
-  //   append_file("users", user.getStringRepresentation());
+  //   appendFile("users", user.getStringRepresentation());
   // }
 
 
