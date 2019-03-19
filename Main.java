@@ -20,7 +20,20 @@ class Main {
     User user = new User("002","tester");
     System.out.println(getBidsForUser(user));
 
+    clearAllTables();
   }
+  /*
+    DB tools
+  */
+  void tableClear(String table) {
+    try(FileWriter file = new FileWriter("./"+table+".txt",false)) {} catch (IOException e){}
+  }
+  void clearAllTables() {
+    tableClear("bids");
+    tableClear("items");
+    tableClear("users");
+  }
+
   /*
     DB get
   */
@@ -84,8 +97,6 @@ class Main {
   }
   DBentry getEntryFromName(String table, String name) { //returns entry object for given name
     DBentry entry = null;
-    //check invalid type of return data
-
     try(FileReader file = new FileReader("./"+table+".txt")) {
       BufferedReader inStream = new BufferedReader(file);
       String line;
@@ -203,8 +214,6 @@ class Main {
     //append to storage
     appendFile("users", user.getStringRepresentation());
   }
-
-
 
 }
 
