@@ -17,6 +17,9 @@ class Main {
     ArrayList<String> bids = getBidsForItem(item);
     System.out.print(bids);
 
+    User user = new User("002","tester");
+    System.out.println(getBidsForUser(user));
+
   }
   /*
     DB get
@@ -124,8 +127,23 @@ class Main {
     }
     return output;
   }
-  String getItemsForUser(User user) {
-    return null;
+  ArrayList<String> getBidsForUser(User user) { //returns list of bids for item
+    ArrayList<String> output = new ArrayList<String>();
+    try(FileReader file = new FileReader(bidsTable)) {
+      BufferedReader inStream = new BufferedReader(file);
+      String line;
+      while((line = inStream.readLine()) != null) {
+        //check each line for matching itemId
+        if (line.substring(6,9).equals(user.Id)) {
+          output.add(line);
+          }
+        }
+    } catch (FileNotFoundException e) {
+      throw new IllegalArgumentException("Invalid table given.", e);
+    } catch (IOException e) {
+      System.out.println(e);
+    }
+    return output;
   }
   /*
     DB set
