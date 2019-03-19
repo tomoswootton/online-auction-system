@@ -1,20 +1,16 @@
 import java.io.*;
 class Main {
 
-  // String directory = System.getProperty("user.home");
-  // String fileName = "sample.txt";
-  // String absolutePath = directory + File.separator + fileName;
-
   String[] tables = {"bids", "items", "users"};
-
 
   public static void main(String[] args) {
     new Main();
   }
 
   public Main() {
-    DBentry entry = read_file_from_Id("items", "000");
-    System.out.println(entry.getStringRepresentation());
+    // DBentry entry = read_file_from_name("items", "000");
+    // System.out.println(entry.getStringRepresentation());
+    System.out.println("lineCount = "+num_entries("bids"));
   }
 
   boolean inTablesArray(String string) {
@@ -29,11 +25,6 @@ class Main {
   //find entry given Id
   DBentry read_file_from_Id(String table, String Id) {
     DBentry entry = null;
-    //check invalid type of return data
-    if (!inTablesArray(table)) {
-      System.out.println("ERROR: invalid table.");
-      return null;
-    }
 
     try(FileReader file = new FileReader("./"+table+".txt")) {
       BufferedReader inStream = new BufferedReader(file);
@@ -54,6 +45,8 @@ class Main {
       }
       System.out.println("ERROR: No Id found.");
     } catch (FileNotFoundException e) {
+      System.out.println("ERROR: invalid table.");
+
       System.out.println(e);
     } catch (IOException e) {
       System.out.println(e);
@@ -64,10 +57,6 @@ class Main {
   DBentry read_file_from_name(String table, String name) {
     DBentry entry = null;
     //check invalid type of return data
-    if (!(table.equals("items") || table.equals("users"))) {
-      System.out.println("ERROR: Only items and users have names");
-      return null;
-    }
 
     try(FileReader file = new FileReader("./"+table+".txt")) {
       BufferedReader inStream = new BufferedReader(file);
@@ -86,6 +75,7 @@ class Main {
       }
       System.out.println("ERROR: No name found.");
     } catch (FileNotFoundException e) {
+      System.out.println("ERROR: invalid table.");
       System.out.println(e);
     } catch (IOException e) {
       System.out.println(e);
@@ -103,12 +93,22 @@ class Main {
     }
   }
 
-  // int num_entries(String table) {
-  //   try(FileReader file = new FileReader("./"+table+".txt")) {
-  //     BufferedReader inStream = new BufferedReader(file);
-  //     String line;
-  //     while((line = inStream.readLine()) != null) {
-  // }
+  int num_entries(String table) {
+    String line;
+    int lineCount = 0;
+    try(FileReader file = new FileReader("./"+table+".txt")) {
+      BufferedReader inStream = new BufferedReader(file);
+      while((line = inStream.readLine()) != null) {
+        lineCount ++;
+      }
+    } catch (FileNotFoundException e) {
+      System.out.println("ERROR: invalid table.");
+      System.out.println(e);
+    } catch (IOException e) {
+      System.out.println(e);
+    }
+    return lineCount;
+  }
 
   // add_bid(String userName, String itemName) {
   //   Bid bid = new Bid()
