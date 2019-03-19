@@ -11,10 +11,7 @@ class Main {
   public Main() {
     // DBentry entry = getEntryFromName("items", "000");
     // System.out.println(entry.getStringRepresentation());
-    Item item = new Item("002", "testerer");
-    System.out.println(item.getStringRepresentation());
-    item.getHighestBid();
-    System.out.println(item.getStringRepresentation());
+    addBid("tomos", "clock", "093");
 
 
   }
@@ -135,15 +132,19 @@ class Main {
     }
     return numS;
   }
-  boolean stringValueLarger(String str1, String str2) {
-    if (Integer.parseInt(str1) > Integer.parseInt(str2)) {
-      return true;
-    }
-    return false;
-  }
-
 
   void addBid(String userName, String itemName, String value) {
+    //first find currenct highest bid for item
+    DBentry entry = getEntryFromName("items", itemName);
+    Item item = (Item) entry;
+
+    System.out.println(item.getStringRepresentation());
+    if(item.stringValueLarger(item.getHighestBid(),value)) {
+      System.out.println("Bid denied, lower than current bid: "+item.highest_bid);
+      return;
+    }
+    System.out.println(item.getStringRepresentation());
+
     //construct bid data structure from given userName and itemName
     Bid bid = new Bid(newId("bids"),getEntryFromName("users", userName).Id, getEntryFromName("items", itemName).Id, value);
     //append to storage file
@@ -162,13 +163,14 @@ class Main {
     appendFile("users", user.getStringRepresentation());
   }
 
-  getUsersItem
+
 
 }
 
 abstract class DBentry {
   public String Id;
   public abstract String getStringRepresentation();
+
 }
 
 class Bid extends DBentry {
@@ -192,12 +194,22 @@ class Item extends DBentry {
   public String name;
   public String highest_bid = "000";
 
+  String bidsTable = "./bids.txt";
+  String usersTable = "./users.txt";
+  String itemsTable = "./items.txt";
+
   public Item(String Id, String name) {
     this.Id = Id;
     this.name = name;
   }
   public String getStringRepresentation() {
     return Id + name + highest_bid;
+  }
+  boolean stringValueLarger(String str1, String str2) {
+    if (Integer.parseInt(str1) > Integer.parseInt(str2)) {
+      return true;
+    }
+    return false;
   }
   public String getHighestBid() {
     //find highest bid
