@@ -5,11 +5,7 @@ class Main {
   // String fileName = "sample.txt";
   // String absolutePath = directory + File.separator + fileName;
 
-  //{id, name}
-  String itemsFilePath = "./items.txt";
-  //{id, user, item}
-  String bidsFilePath = "./bids.txt";
-
+  String[] tables = {"bids", "items", "users"};
 
 
   public static void main(String[] args) {
@@ -17,45 +13,46 @@ class Main {
   }
 
   public Main() {
-    DBentry entry = read_file("items", "000");
-    entry.print();
+    DBentry entry = read_file_from_Id("items", "000");
+    System.out.println(entry.getStringRepresentation());
   }
 
-  void write_file(String fileLocation, String msg) {
-    System.out.println("writing file");
-    try(FileWriter file = new FileWriter(fileLocation, true)) {
-        file.append(msg);
-        file.flush();
-        file.close();
-    } catch (IOException e) {
-        System.out.println("write error: "+ e);
+  boolean inTablesArray(String string) {
+    for (String s : tables) {
+      if (s.equals(string)) {
+        return true;
+      }
     }
-}
-  //add readType parameter for different reads
-  DBentry read_file(String type, String Id) {
-    DBentry entry;
+    return false;
+  }
+
+  //find entry given Id
+  DBentry read_file_from_Id(String table, String Id) {
+    DBentry entry = null;
     //check invalid type of return data
-    if (!(type.equals("bids") || type.equals("items"))) {
-      System.out.println("ERROR: invalid type.");
+    if (!inTablesArray(table)) {
+      System.out.println("ERROR: invalid table.");
       return null;
     }
 
-    try(FileReader file = new FileReader("./"+type+".txt")) {
+    try(FileReader file = new FileReader("./"+table+".txt")) {
       BufferedReader inStream = new BufferedReader(file);
       String line;
       while((line = inStream.readLine()) != null) {
         //check each line for matching ID
         if (line.substring(0,3).equals(Id)) {
           //create bid object
-          if (type.equals("bids")) {
+          if (table.equals("bids")) {
             entry = new Bid(line.substring(0,3),line.substring(3,6),line.substring(6,9));
-          } else {
+          } else if (table.equals("items")){
             entry = new Item(line.substring(0,3),line.substring(3,line.length()));
-          }
-          return entry;
+          } else if (table.equals("users")){
+            entry = new User(line.substring(0,3),line.substring(3,line.length()));
         }
-        // System.out.println(line);
+        return entry;
+        }
       }
+      System.out.println("ERROR: No Id found.");
     } catch (FileNotFoundException e) {
       System.out.println(e);
     } catch (IOException e) {
@@ -63,13 +60,74 @@ class Main {
     }
     return null;
   }
+  //find entry given Name
+  DBentry read_file_from_name(String table, String name) {
+    DBentry entry = null;
+    //check invalid type of return data
+    if (!(table.equals("items") || table.equals("users"))) {
+      System.out.println("ERROR: Only items and users have names");
+      return null;
+    }
+
+    try(FileReader file = new FileReader("./"+table+".txt")) {
+      BufferedReader inStream = new BufferedReader(file);
+      String line;
+      while((line = inStream.readLine()) != null) {
+        //check each line for matching ID
+        if (line.substring(3,line.length()).equals(name)) {
+          //create bid object
+          if (table.equals("items")){
+            entry = new Item(line.substring(0,3),line.substring(3,line.length()));
+          } else if (table.equals("users")){
+            entry = new User(line.substring(0,3),line.substring(3,line.length()));
+          }
+        return entry;
+        }
+      }
+      System.out.println("ERROR: No name found.");
+    } catch (FileNotFoundException e) {
+      System.out.println(e);
+    } catch (IOException e) {
+      System.out.println(e);
+    }
+    return null;
+  }
+  //append entry to file
+  void append_file(String table, String msg) {
+    try(FileWriter file = new FileWriter("./"+table+".txt", true)) {
+      file.append(msg);
+      file.flush();
+      file.close();
+    } catch (IOException e) {
+      System.out.println("write error: "+ e);
+    }
+  }
+
+  // int num_entries(String table) {
+  //   try(FileReader file = new FileReader("./"+table+".txt")) {
+  //     BufferedReader inStream = new BufferedReader(file);
+  //     String line;
+  //     while((line = inStream.readLine()) != null) {
+  // }
+
+  // add_bid(String userName, String itemName) {
+  //   Bid bid = new Bid()
+  //   append_file("bids", bid.getStringRepresentation());
+  // }
+  //
+  // add_item(Item item) {
+  //   append_file("items", item.getStringRepresentation());
+  // }
+  // add_user(User user) {
+  //   append_file("users", user.getStringRepresentation());
+  // }
 
 
 }
 
 abstract class DBentry {
   public String Id;
-  public abstract void print();
+  public abstract String getStringRepresentation();
 }
 
 class Bid extends DBentry {
@@ -81,11 +139,11 @@ class Bid extends DBentry {
     this.userId = userId;
     this.itemId = itemId;
   }
-
-  public void print() {
-    System.out.println(Id + userId + itemId);
+  public String getStringRepresentation() {
+    return Id + userId + itemId;
   }
 }
+
 class Item extends DBentry {
   public String name;
 
@@ -93,8 +151,19 @@ class Item extends DBentry {
     this.Id = Id;
     this.name = name;
   }
-
-  public void print() {
-    System.out.println(Id + name);
+  public String getStringRepresentation() {
+    return Id + name;
   }
+}
+
+  class User extends DBentry {
+    public String name;
+
+    public User(String Id, String name) {
+      this.Id = Id;
+      this.name = name;
+    }
+    public String getStringRepresentation() {
+      return Id + name;
+    }
 }

@@ -1,0 +1,5 @@
+DB is made up of 3 tables:
+
+Bid - {Id, itemId, userId} - {3 char || 3 char || 3 char}
+User - {Id, Name} - {3 char || String}
+Item - {Id, Name} - {3 char || String}
