@@ -1,20 +1,22 @@
 import java.io.*;
 import java.util.*;
-class Main {
+class DB {
 
-  String bidsTable = "./bids.txt";
-  String usersTable = "./users.txt";
-  String itemsTable = "./items.txt";
+  public String bidsTable = "./bids.txt";
+  public String usersTable = "./users.txt";
+  public String itemsTable = "./items.txt";
   public static void main(String[] args) {
-    new Main();
+    new DB();
   }
 
-  public Main() {
+  public DB() {
     // addUser("tomos");
     // addUser("elliott");
     // addItem("clock");
-    addBid("tomos", "clock", "093");
-    addBid("tomos", "clock", "093");
+    // addBid("tomos", "clock", "093");
+    // addBid("tomos", "clock", "093");
+    System.out.println(checkForCommaInString("tomos"));
+    System.out.println(checkForCommaInString("tomo,s"));
 
     // DBentry entry = getEntryFromId(itemsTable, "0");
     // Item item = (Item) entry;
@@ -32,10 +34,10 @@ class Main {
   /*
     DB tools
   */
-  void tableClear(String table) {
+  public void tableClear(String table) {
     try(FileWriter file = new FileWriter(table,false)) {} catch (IOException e){}
   }
-  void clearAllTables() {
+  public void clearAllTables() {
     tableClear(bidsTable);
     tableClear(itemsTable);
     tableClear(usersTable);
@@ -44,11 +46,17 @@ class Main {
     // 0:ID, 1:Name, 2:itemId, 3:value
     return entry.split(",")[field];
   }
+  boolean checkForCommaInString(String string) {
+    if(string.indexOf(",") == -1) {
+      return false;
+    }
+    return true;
+  }
 
   /*
     DB get
   */
-  void listTable(String table) {
+  public void listTable(String table) {
     try(FileReader file = new FileReader(table)) {
       BufferedReader inStream = new BufferedReader(file);
       String line;
@@ -131,7 +139,7 @@ class Main {
     }
     return null;
   }
-  ArrayList<String> getBidsForItem(Item item) { //returns list of bids for item
+  public ArrayList<String> getBidsForItem(Item item) { //returns list of bids for item
     ArrayList<String> output = new ArrayList<String>();
     try(FileReader file = new FileReader(bidsTable)) {
       BufferedReader inStream = new BufferedReader(file);
@@ -149,7 +157,7 @@ class Main {
     }
     return output;
   }
-  ArrayList<String> getBidsForUser(User user) { //returns list of bids for item
+  public ArrayList<String> getBidsForUser(User user) { //returns list of bids for item
     ArrayList<String> output = new ArrayList<String>();
     try(FileReader file = new FileReader(bidsTable)) {
       BufferedReader inStream = new BufferedReader(file);
@@ -167,6 +175,7 @@ class Main {
     }
     return output;
   }
+
   /*
     DB set
   */
@@ -196,7 +205,12 @@ class Main {
       System.out.println("write error: "+ e);
     }
   }
-  void addBid(String userName, String itemName, String value) {
+  public void addBid(String userName, String itemName, String value) {
+    //check input for invalid characters
+    if (checkForCommaInString(userName) || checkForCommaInString(itemName) || checkForCommaInString(value)) {
+      System.out.println("Failed write: Invalid input");
+      return;
+    }
     //first find currenct highest bid for item
     DBentry entry = getEntryFromName(itemsTable, itemName);
 
@@ -219,13 +233,23 @@ class Main {
     //append to storage file
     appendFile(bidsTable, bid.getDbTuple());
   }
-  void addItem(String name) {
+  public void addItem(String name) {
+    //check input for invalid characters
+    if (checkForCommaInString(name)) {
+      System.out.println("Failed write: Invalid input");
+      return;
+    }
     //contruct item
     Item item = new Item(newId(itemsTable),name,"0");
     //append to storage
     appendFile(itemsTable, item.getDbTuple());
   }
-  void addUser(String name) {
+  public void addUser(String name) {
+    //check input for invalid characters
+    if (checkForCommaInString(name)) {
+      System.out.println("Failed write: Invalid input");
+      return;
+    }
     //contruct item
     User user = new User(newId(usersTable), name);
     //append to storage
