@@ -10,35 +10,46 @@ class Main {
   }
 
   public Main() {
-    // DBentry entry = getEntryFromName("items", "000");
-    // System.out.println(entry.getStringRepresentation());
-    // addBid("tomos", "clock", "093");
-    Item item = (Item) getEntryFromId("items","555");
-    ArrayList<String> bids = getBidsForItem(item);
-    System.out.print(bids);
+    // addUser("tomos");
+    // addUser("elliott");
+    // addItem("clock");
+    addBid("tomos", "clock", "093");
+    addBid("tomos", "clock", "093");
 
-    User user = new User("002","tester");
-    System.out.println(getBidsForUser(user));
+    // DBentry entry = getEntryFromId(itemsTable, "0");
+    // Item item = (Item) entry;
+    // System.out.println(item.name);
 
-    clearAllTables();
+
+    // Item item = (Item) getEntryFromId("items","555");
+    // ArrayList<String> bids = getBidsForItem(item);
+    // System.out.print(bids);
+    //
+    // User user = new User("002","tester");
+    // System.out.println(getBidsForUser(user));
+
   }
   /*
     DB tools
   */
   void tableClear(String table) {
-    try(FileWriter file = new FileWriter("./"+table+".txt",false)) {} catch (IOException e){}
+    try(FileWriter file = new FileWriter(table,false)) {} catch (IOException e){}
   }
   void clearAllTables() {
-    tableClear("bids");
-    tableClear("items");
-    tableClear("users");
+    tableClear(bidsTable);
+    tableClear(itemsTable);
+    tableClear(usersTable);
+  }
+  String fieldFromEntry(String entry, int field) {
+    // 0:ID, 1:Name, 2:itemId, 3:value
+    return entry.split(",")[field];
   }
 
   /*
     DB get
   */
   void listTable(String table) {
-    try(FileReader file = new FileReader("./"+table+".txt")) {
+    try(FileReader file = new FileReader(table)) {
       BufferedReader inStream = new BufferedReader(file);
       String line;
       while((line = inStream.readLine()) != null) {
@@ -53,7 +64,7 @@ class Main {
   int numEntries(String table) {
     String line;
     int lineCount = 0;
-    try(FileReader file = new FileReader("./"+table+".txt")) {
+    try(FileReader file = new FileReader(table)) {
       BufferedReader inStream = new BufferedReader(file);
       while((line = inStream.readLine()) != null) {
         lineCount ++;
@@ -70,26 +81,26 @@ class Main {
 
     DBentry entry = null;
 
-    try(FileReader file = new FileReader("./"+table+".txt")) {
+    try(FileReader file = new FileReader(table)) {
       BufferedReader inStream = new BufferedReader(file);
       String line;
       while((line = inStream.readLine()) != null) {
         //check each line for matching ID
-        if (line.substring(0,3).equals(Id)) {
+        if (fieldFromEntry(line,0).equals(Id)) {
           //create bid object
-          if (table.equals("bids")) {
-            entry = new Bid(line.substring(0,3),line.substring(3,6),line.substring(6,9),line.substring(9,12));
-          } else if (table.equals("items")){
-            entry = new Item(line.substring(0,3),line.substring(3,6),line.substring(6,line.length()));
-          } else if (table.equals("users")){
-            entry = new User(line.substring(0,3),line.substring(3,line.length()));
+          if (table.equals(bidsTable)) {
+            entry = new Bid(fieldFromEntry(line,0),fieldFromEntry(line,1),fieldFromEntry(line,2),fieldFromEntry(line,3));
+          } else if (table.equals(itemsTable)){
+            entry = new Item(fieldFromEntry(line,0),fieldFromEntry(line,1),fieldFromEntry(line,2));
+          } else if (table.equals(usersTable)){
+            entry = new User(fieldFromEntry(line,0),fieldFromEntry(line,1));
         }
         return entry;
         }
       }
       System.out.println("ERROR: No Id found in table.");
     } catch (FileNotFoundException e) {
-      throw new IllegalArgumentException("Invalid table given.", e);
+      throw new IllegalArgumentException("Invalid table given.: "+table, e);
     } catch (IOException e) {
       System.out.println(e);
     }
@@ -97,17 +108,17 @@ class Main {
   }
   DBentry getEntryFromName(String table, String name) { //returns entry object for given name
     DBentry entry = null;
-    try(FileReader file = new FileReader("./"+table+".txt")) {
+    try(FileReader file = new FileReader(table)) {
       BufferedReader inStream = new BufferedReader(file);
       String line;
       while((line = inStream.readLine()) != null) {
-        //check each line for matching ID
-        if (line.substring(3,line.length()).equals(name)) {
+        //check each line for matching name
+        if (fieldFromEntry(line,1).equals(name)) {
           //create bid object
-          if (table.equals("items")){
-            entry = new Item(line.substring(0,3),line.substring(3,6),line.substring(6,line.length()));
-          } else if (table.equals("users")){
-            entry = new User(line.substring(0,3),line.substring(3,line.length()));
+          if (table.equals(itemsTable)){
+            entry = new Item(fieldFromEntry(line,0),fieldFromEntry(line,1),fieldFromEntry(line,2));
+          } else if (table.equals(usersTable)){
+            entry = new User(fieldFromEntry(line,0),fieldFromEntry(line,1));
           }
         return entry;
         }
@@ -127,7 +138,7 @@ class Main {
       String line;
       while((line = inStream.readLine()) != null) {
         //check each line for matching itemId
-        if (line.substring(3,6).equals(item.Id)) {
+        if (fieldFromEntry(line,2).equals(item.Id)) {
           output.add(line);
           }
         }
@@ -144,8 +155,8 @@ class Main {
       BufferedReader inStream = new BufferedReader(file);
       String line;
       while((line = inStream.readLine()) != null) {
-        //check each line for matching itemId
-        if (line.substring(6,9).equals(user.Id)) {
+        //check each line for matching userId
+        if (fieldFromEntry(line,1).equals(user.Id)) {
           output.add(line);
           }
         }
@@ -177,7 +188,7 @@ class Main {
     return numS;
   }
   void appendFile(String table, String msg) {
-    try(FileWriter file = new FileWriter("./"+table+".txt", true)) {
+    try(FileWriter file = new FileWriter(table, true)) {
       file.append(msg+"\n");
       file.flush();
       file.close();
@@ -187,40 +198,51 @@ class Main {
   }
   void addBid(String userName, String itemName, String value) {
     //first find currenct highest bid for item
-    DBentry entry = getEntryFromName("items", itemName);
+    DBentry entry = getEntryFromName(itemsTable, itemName);
+
+    //error if item does not exist
+    if (entry == null) {
+      System.out.println("ERROR: No item by the name "+itemName+".");
+      return;
+    }
+
     Item item = (Item) entry;
 
-    System.out.println(item.getStringRepresentation());
-    if(item.stringValueLarger(item.getHighestBid(),value)) {
+    //check highest bid
+    if(item.stringNumericValueCompare(item.getHighestBid(),value)) {
       System.out.println("Bid denied, lower than current bid: "+item.highest_bid);
       return;
     }
-    System.out.println(item.getStringRepresentation());
 
     //construct bid data structure from given userName and itemName
-    Bid bid = new Bid(newId("bids"),getEntryFromName("users", userName).Id, getEntryFromName("items", itemName).Id, value);
+    Bid bid = new Bid(newId(bidsTable),getEntryFromName(usersTable, userName).Id, getEntryFromName(itemsTable, itemName).Id, value);
     //append to storage file
-    appendFile("bids", bid.getStringRepresentation());
+    appendFile(bidsTable, bid.getDbTuple());
   }
   void addItem(String name) {
     //contruct item
-    Item item = new Item(newId("items"),"000", name);
+    Item item = new Item(newId(itemsTable),name,"0");
     //append to storage
-    appendFile("items", item.getStringRepresentation());
+    appendFile(itemsTable, item.getDbTuple());
   }
   void addUser(String name) {
     //contruct item
-    User user = new User(newId("users"), name);
+    User user = new User(newId(usersTable), name);
     //append to storage
-    appendFile("users", user.getStringRepresentation());
+    appendFile(usersTable, user.getDbTuple());
   }
 
 }
 
 abstract class DBentry {
   public String Id;
-  public abstract String getStringRepresentation();
-
+  public abstract String getDbTuple();
+  boolean stringNumericValueCompare(String str1, String str2) {
+    if (Integer.parseInt(str1) > Integer.parseInt(str2)) {
+      return true;
+    }
+    return false;
+  }
 }
 
 class Bid extends DBentry {
@@ -235,8 +257,8 @@ class Bid extends DBentry {
     this.value = value;
   }
 
-  public String getStringRepresentation() {
-    return Id + userId + itemId + value;
+  public String getDbTuple() {
+    return Id +","+ userId +","+ itemId +","+ value;
   }
 }
 
@@ -248,18 +270,12 @@ class Item extends DBentry {
   String usersTable = "./users.txt";
   String itemsTable = "./items.txt";
 
-  public Item(String Id, String highest_bid, String name) {
+  public Item(String Id, String name, String highest_bid) {
     this.Id = Id;
     this.name = name;
   }
-  public String getStringRepresentation() {
-    return Id + highest_bid + name;
-  }
-  boolean stringValueLarger(String str1, String str2) {
-    if (Integer.parseInt(str1) > Integer.parseInt(str2)) {
-      return true;
-    }
-    return false;
+  public String getDbTuple() {
+    return Id +","+ name +","+ highest_bid;
   }
   public String getHighestBid() {
     //find highest bid
@@ -268,7 +284,7 @@ class Item extends DBentry {
       String line;
       while((line = inStream.readLine()) != null) {
         //check each line for matching itemId and compare value with highest_bid
-        if (line.substring(6,9).equals(this.Id) && stringValueLarger(line.substring(9,12),highest_bid)) {
+        if (line.substring(6,9).equals(this.Id) && stringNumericValueCompare(line.substring(9,12),highest_bid)) {
           //set new highest bid
           highest_bid = line.substring(9,12);
         }
@@ -290,7 +306,7 @@ class Item extends DBentry {
       this.Id = Id;
       this.name = name;
     }
-    public String getStringRepresentation() {
-      return Id + name;
+    public String getDbTuple() {
+      return Id +","+ name;
     }
 }
