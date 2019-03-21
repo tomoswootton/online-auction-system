@@ -10,6 +10,58 @@ class DB {
   }
 
   public DB() {
+    testing();
+  }
+
+  void testing() {
+    clearAllTables();
+
+    //invalid inputs
+    addItem("");
+    addItem("clo,ck");
+    addUser("");
+    addUser("tom,os");
+
+    addItem("clock");
+    addUser("tomos");
+    addBid("","clock","23");
+    addBid("tomos","","23");
+    addBid("tomos","clock","");
+    addBid("tom,os","clock","23");
+    addBid("tomos","cl,ock","23");
+    addBid("tomos","clock","2,3");
+    addBid("tomos","clock","23");
+    
+    //test new bid must be > highest
+    addBid("tomos", "clock", "100");
+    addBid("tomos", "clock", "99");
+
+    //pulling from tables
+    Item item = (Item) getEntryFromName(itemsTable, "");
+    item = (Item) getEntryFromName(itemsTable, "not-in-table");
+    item = (Item) getEntryFromName(itemsTable, "clock");
+    System.out.println(item.getDbTuple());
+
+    User user = (User) getEntryFromName(usersTable, "");
+    user = (User) getEntryFromName(usersTable, "not-in-table");
+    user = (User) getEntryFromName(usersTable, "tomos");
+    System.out.println(user.getDbTuple());
+
+    item = (Item) getEntryFromName(itemsTable, "");
+    System.out.println(getBidsForItem(item));
+    item = (Item) getEntryFromName(itemsTable, "not-in-table");
+    System.out.println(getBidsForItem(item));
+    item = (Item) getEntryFromName(itemsTable, "clock");
+    System.out.println(getBidsForItem(item));
+
+    user = (User) getEntryFromName(usersTable, "");
+    System.out.println(getBidsForUser(user));
+    user = (User) getEntryFromName(usersTable, "not-in-table");
+    System.out.println(getBidsForUser(user));
+    user = (User) getEntryFromName(usersTable, "tomos");
+    System.out.println(getBidsForUser(user));
+
+
 
   }
 
@@ -34,7 +86,6 @@ class DB {
     }
     return true;
   }
-
   /*
     DB get
   */
@@ -122,6 +173,9 @@ class DB {
     return null;
   }
   public ArrayList<String> getBidsForItem(Item item) { //returns list of bids for item
+    if (item == null) {
+      return null;
+    }
     ArrayList<String> output = new ArrayList<String>();
     try(FileReader file = new FileReader(bidsTable)) {
       BufferedReader inStream = new BufferedReader(file);
@@ -140,6 +194,9 @@ class DB {
     return output;
   }
   public ArrayList<String> getBidsForUser(User user) { //returns list of bids for item
+    if (user == null) {
+      return null;
+    }
     ArrayList<String> output = new ArrayList<String>();
     try(FileReader file = new FileReader(bidsTable)) {
       BufferedReader inStream = new BufferedReader(file);
@@ -173,7 +230,7 @@ class DB {
       case 3 :
         break;
       default:
-        throw new IllegalArgumentException("Invalid input length.");
+        throw new IllegalArgumentException("ERROR: Invalid input length.");
     }
     return numS;
   }
@@ -188,8 +245,8 @@ class DB {
   }
   public void addBid(String userName, String itemName, String value) {
     //check input for invalid characters
-    if (checkForCommaInString(userName) || checkForCommaInString(itemName) || checkForCommaInString(value) || value.equals("")) {
-      System.out.println("Failed write: Invalid input");
+    if (checkForCommaInString(userName) || checkForCommaInString(itemName) || checkForCommaInString(value) || userName.equals("") || itemName.equals("") || value.equals("")) {
+      System.out.println("ERROR: Invalid input");
       return;
     }
     //first find currenct highest bid for item
@@ -218,7 +275,7 @@ class DB {
   public void addItem(String name) {
     //check input for invalid characters
     if (checkForCommaInString(name) || name.equals("")) {
-      System.out.println("Failed write: Invalid input");
+      System.out.println("ERROR: Invalid input");
       return;
     }
     //contruct item
@@ -230,7 +287,7 @@ class DB {
   public void addUser(String name) {
     //check input for invalid characters
     if (checkForCommaInString(name) || name.equals("")) {
-      System.out.println("Failed write: Invalid input");
+      System.out.println("ERROR: Invalid input");
       return;
     }
     //contruct item
