@@ -10,27 +10,9 @@ class DB {
   }
 
   public DB() {
-    // addUser("tomos");
-    // addUser("elliott");
-    // addItem("clock");
-    // addBid("tomos", "clock", "093");
-    // addBid("tomos", "clock", "093");
-    System.out.println(checkForCommaInString("tomos"));
-    System.out.println(checkForCommaInString("tomo,s"));
-
-    // DBentry entry = getEntryFromId(itemsTable, "0");
-    // Item item = (Item) entry;
-    // System.out.println(item.name);
-
-
-    // Item item = (Item) getEntryFromId("items","555");
-    // ArrayList<String> bids = getBidsForItem(item);
-    // System.out.print(bids);
-    //
-    // User user = new User("002","tester");
-    // System.out.println(getBidsForUser(user));
 
   }
+
   /*
     DB tools
   */
@@ -211,20 +193,18 @@ class DB {
       return;
     }
     //first find currenct highest bid for item
-    DBentry entry = getEntryFromName(itemsTable, itemName);
+    Item item = (Item) getEntryFromName(itemsTable, itemName);
 
     //error if item does not exist
-    if (entry == null) {
+    if (item == null) {
       System.out.println("ERROR: No item by the name "+itemName+".");
       return;
     }
 
-    Item item = (Item) entry;
-
     //check highest bid
     String highest_bid = item.getHighestBid();
     if(item.stringNumericValueCompare(highest_bid,value)) {
-      System.out.println("Bid denied, lower than current bid: "+highest_bid);
+      System.out.println("\nBid denied, lower than current bid: "+highest_bid);
       return;
     }
 
@@ -232,6 +212,8 @@ class DB {
     Bid bid = new Bid(newId(bidsTable),getEntryFromName(usersTable, userName).Id, getEntryFromName(itemsTable, itemName).Id, value);
     //append to storage file
     appendFile(bidsTable, bid.getDbTuple());
+    System.out.println("Bid success, "+userName+" is new highest bidder on "+itemName+" with bid "+value);
+
   }
   public void addItem(String name) {
     //check input for invalid characters
@@ -243,6 +225,7 @@ class DB {
     Item item = new Item(newId(itemsTable),name);
     //append to storage
     appendFile(itemsTable, item.getDbTuple());
+    System.out.println("Item "+name+" added.");
   }
   public void addUser(String name) {
     //check input for invalid characters
@@ -254,6 +237,7 @@ class DB {
     User user = new User(newId(usersTable), name);
     //append to storage
     appendFile(usersTable, user.getDbTuple());
+    System.out.println("User "+name+" added.");
   }
 
 
@@ -266,14 +250,12 @@ class Bid extends DBentry {
   public String userId;
   public String itemId;
   public String value;
-
   public Bid(String Id, String userId, String itemId, String value ) {
     this.Id = Id;
     this.userId = userId;
     this.itemId = itemId;
     this.value = value;
   }
-
   public String getDbTuple() {
     return Id +","+ userId +","+ itemId +","+ value;
   }
@@ -281,7 +263,6 @@ class Bid extends DBentry {
 
 class Item extends DBentry {
   public String name;
-
   public Item(String Id, String name) {
     this.Id = Id;
     this.name = name;
@@ -320,7 +301,6 @@ class Item extends DBentry {
 
   class User extends DBentry {
     public String name;
-
     public User(String Id, String name) {
       this.Id = Id;
       this.name = name;
