@@ -85,7 +85,7 @@ class DB {
     }
     return lineCount;
   }
-  DBentry getEntryFromId(String table, String Id) { //returns entry object for given Id
+  public DBentry getEntryFromId(String table, String Id) { //returns entry object for given Id
 
     DBentry entry = null;
 
@@ -99,14 +99,14 @@ class DB {
           if (table.equals(bidsTable)) {
             entry = new Bid(fieldFromEntry(line,0),fieldFromEntry(line,1),fieldFromEntry(line,2),fieldFromEntry(line,3));
           } else if (table.equals(itemsTable)){
-            entry = new Item(fieldFromEntry(line,0),fieldFromEntry(line,1),fieldFromEntry(line,2));
+            entry = new Item(fieldFromEntry(line,0),fieldFromEntry(line,1));
           } else if (table.equals(usersTable)){
             entry = new User(fieldFromEntry(line,0),fieldFromEntry(line,1));
         }
         return entry;
         }
       }
-      System.out.println("ERROR: No Id found in table.");
+      System.out.println("ERROR: No Id="+Id+" found in "+table+".");
     } catch (FileNotFoundException e) {
       throw new IllegalArgumentException("Invalid table given.: "+table, e);
     } catch (IOException e) {
@@ -114,7 +114,7 @@ class DB {
     }
     return null;
   }
-  DBentry getEntryFromName(String table, String name) { //returns entry object for given name
+  public DBentry getEntryFromName(String table, String name) { //returns entry object for given name
     DBentry entry = null;
     try(FileReader file = new FileReader(table)) {
       BufferedReader inStream = new BufferedReader(file);
@@ -124,14 +124,14 @@ class DB {
         if (fieldFromEntry(line,1).equals(name)) {
           //create bid object
           if (table.equals(itemsTable)){
-            entry = new Item(fieldFromEntry(line,0),fieldFromEntry(line,1),fieldFromEntry(line,2));
+            entry = new Item(fieldFromEntry(line,0),fieldFromEntry(line,1));
           } else if (table.equals(usersTable)){
             entry = new User(fieldFromEntry(line,0),fieldFromEntry(line,1));
           }
         return entry;
         }
       }
-      System.out.println("ERROR: No name found.");
+      System.out.println("ERROR: No name="+name+" found in "+table+".");
     } catch (FileNotFoundException e) {
       throw new IllegalArgumentException("Invalid table given.", e);
     } catch (IOException e) {
@@ -147,7 +147,7 @@ class DB {
       while((line = inStream.readLine()) != null) {
         //check each line for matching itemId
         if (fieldFromEntry(line,2).equals(item.Id)) {
-          output.add(line);
+          output.add(fieldFromEntry(line,3));
           }
         }
     } catch (FileNotFoundException e) {
@@ -165,7 +165,7 @@ class DB {
       while((line = inStream.readLine()) != null) {
         //check each line for matching userId
         if (fieldFromEntry(line,1).equals(user.Id)) {
-          output.add(line);
+          output.add(fieldFromEntry(line,3));
           }
         }
     } catch (FileNotFoundException e) {
@@ -175,7 +175,6 @@ class DB {
     }
     return output;
   }
-
   /*
     DB set
   */
@@ -207,7 +206,7 @@ class DB {
   }
   public void addBid(String userName, String itemName, String value) {
     //check input for invalid characters
-    if (checkForCommaInString(userName) || checkForCommaInString(itemName) || checkForCommaInString(value)) {
+    if (checkForCommaInString(userName) || checkForCommaInString(itemName) || checkForCommaInString(value) || value.equals("")) {
       System.out.println("Failed write: Invalid input");
       return;
     }
@@ -223,8 +222,9 @@ class DB {
     Item item = (Item) entry;
 
     //check highest bid
-    if(item.stringNumericValueCompare(item.getHighestBid(),value)) {
-      System.out.println("Bid denied, lower than current bid: "+item.highest_bid);
+    String highest_bid = item.getHighestBid();
+    if(item.stringNumericValueCompare(highest_bid,value)) {
+      System.out.println("Bid denied, lower than current bid: "+highest_bid);
       return;
     }
 
@@ -235,18 +235,18 @@ class DB {
   }
   public void addItem(String name) {
     //check input for invalid characters
-    if (checkForCommaInString(name)) {
+    if (checkForCommaInString(name) || name.equals("")) {
       System.out.println("Failed write: Invalid input");
       return;
     }
     //contruct item
-    Item item = new Item(newId(itemsTable),name,"0");
+    Item item = new Item(newId(itemsTable),name);
     //append to storage
     appendFile(itemsTable, item.getDbTuple());
   }
   public void addUser(String name) {
     //check input for invalid characters
-    if (checkForCommaInString(name)) {
+    if (checkForCommaInString(name) || name.equals("")) {
       System.out.println("Failed write: Invalid input");
       return;
     }
@@ -256,17 +256,10 @@ class DB {
     appendFile(usersTable, user.getDbTuple());
   }
 
-}
 
 abstract class DBentry {
   public String Id;
   public abstract String getDbTuple();
-  boolean stringNumericValueCompare(String str1, String str2) {
-    if (Integer.parseInt(str1) > Integer.parseInt(str2)) {
-      return true;
-    }
-    return false;
-  }
 }
 
 class Bid extends DBentry {
@@ -287,39 +280,41 @@ class Bid extends DBentry {
 }
 
 class Item extends DBentry {
-  public String highest_bid = "000";
   public String name;
 
-  String bidsTable = "./bids.txt";
-  String usersTable = "./users.txt";
-  String itemsTable = "./items.txt";
-
-  public Item(String Id, String name, String highest_bid) {
+  public Item(String Id, String name) {
     this.Id = Id;
     this.name = name;
   }
   public String getDbTuple() {
-    return Id +","+ name +","+ highest_bid;
+    return Id +","+ name;
   }
   public String getHighestBid() {
+    String highest_bid = "0";
     //find highest bid
     try(FileReader file = new FileReader(bidsTable)) {
       BufferedReader inStream = new BufferedReader(file);
       String line;
       while((line = inStream.readLine()) != null) {
         //check each line for matching itemId and compare value with highest_bid
-        if (line.substring(6,9).equals(this.Id) && stringNumericValueCompare(line.substring(9,12),highest_bid)) {
+        // System.out.println(highest_bid, )
+        if (fieldFromEntry(line,2).equals(Id) && stringNumericValueCompare(fieldFromEntry(line,3),highest_bid)) {
           //set new highest bid
-          highest_bid = line.substring(9,12);
+          highest_bid = fieldFromEntry(line,3);
         }
       }
-      this.highest_bid = highest_bid;
     } catch (FileNotFoundException e) {
       throw new IllegalArgumentException("Invalid table given.", e);
     } catch (IOException e) {
       System.out.println(e);
     }
-    return this.highest_bid;
+    return highest_bid;
+  }
+  boolean stringNumericValueCompare(String str1, String str2) {
+    if (Integer.parseInt(str1) > Integer.parseInt(str2)) {
+      return true;
+    }
+    return false;
   }
 }
 
@@ -333,4 +328,5 @@ class Item extends DBentry {
     public String getDbTuple() {
       return Id +","+ name;
     }
+}
 }

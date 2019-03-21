@@ -20,8 +20,11 @@ class OnlineAuctionSystem {
 
 
   void menu() {
+    System.out.println("--------------------------------------------------------");
     System.out.println("\nType the number of the function you would like to call:\n\n" +"1:Add User\n2:Add Item\n3:Add Bid");
-    System.out.println("4:List Table\n5:Clear Table\n6:Clear All Tables\n");
+    System.out.println("\n4:Get item highest bid\n5:Get item all bids\n6:Get all items a user has bidded");
+    System.out.println("\n7:List Table\n8:Clear Table\n9:Clear All Tables\n");
+    System.out.println("--------------------------------------------------------");
 
     String choice = scanner.nextLine();
     String name = null;
@@ -47,6 +50,34 @@ class OnlineAuctionSystem {
         db.addBid(userName, itemName, value);
         break;
       case "4":
+        System.out.println("Item name:");
+        name = scanner.nextLine();
+        //get item
+        try {
+          DB.Item item = (DB.Item) db.getEntryFromName(db.itemsTable, name);
+          System.out.println("The highest big for item "+name+" is "+item.getHighestBid());
+        } catch (NullPointerException e) {}
+        break;
+      case "5":
+        System.out.println("Item name:");
+        name = scanner.nextLine();
+        //get item
+        try {
+          DB.Item item = (DB.Item) db.getEntryFromName(db.itemsTable, name);
+          System.out.println("All bids for item "+name+": "+db.getBidsForItem(item));
+        } catch (NullPointerException e) {}
+        break;
+      case "6":
+        System.out.println("User name:");
+        name = scanner.nextLine();
+        //get item
+        try {
+          DB.User user = (DB.User) db.getEntryFromName(db.usersTable, name);
+          System.out.println("All bids for user "+name+": "+db.getBidsForUser(user));
+        } catch (NullPointerException e) {}
+        break;
+
+      case "7":
         System.out.println("Which one?\n1:Users\n2:Items\n3:Bids\n4:All");
         table = scanner.nextLine();
         if (table.equals("1")) {
@@ -69,7 +100,7 @@ class OnlineAuctionSystem {
           System.out.println("Invalid table choice");
         }
         break;
-      case "5":
+      case "8":
         System.out.println("Which one?\n1:Users\n2:Items\n3:Bids");
         table = scanner.nextLine();
         if (table.equals("1")) {
@@ -83,7 +114,7 @@ class OnlineAuctionSystem {
           System.out.println("\nBids table cleared.");
         }
         break;
-      case "6":
+      case "9":
         db.clearAllTables();
         System.out.println("\nAll tables cleared.");
         break;
