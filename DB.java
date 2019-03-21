@@ -10,7 +10,7 @@ class DB {
   }
 
   public DB() {
-    testing();
+    // testing();
   }
 
   void testing() {
@@ -31,7 +31,7 @@ class DB {
     addBid("tomos","cl,ock","23");
     addBid("tomos","clock","2,3");
     addBid("tomos","clock","23");
-    
+
     //test new bid must be > highest
     addBid("tomos", "clock", "100");
     addBid("tomos", "clock", "99");
